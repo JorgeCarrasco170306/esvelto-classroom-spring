@@ -1,7 +1,7 @@
 package com.esvelto.classroom.auth.models;
 
-public enum Roles {
+public enum Role {
     STUDENT,
     TEACHER,
-    
+    ADMIN
 }

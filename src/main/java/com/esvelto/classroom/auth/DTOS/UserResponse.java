@@ -5,20 +5,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
-public record RegisterRequest(
-        @NotBlank
-        @Email
+public record UserResponse(
+        UUID id,
         String email,
-        @NotBlank
-        @Size(min = 8)
-        String password,
-        @NotBlank
-        @Size(min = 3)
         String name,
-        @Size(min = 3)
         String lastname,
-        @NotBlank
-        LocalDate birthdate
+        LocalDate birthdate,
+        String role
 ) {
 }

@@ -1,0 +1,16 @@
+spring.application.name=classroom
+
+
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+jwt.secret=
+jwt.expiration=
+
+server.servlet.context-path=/api
+
+
+spring.jpa.hibernate.ddl-auto=update
+
+spring.web.error.include-stacktrace=never
+spring.web.error.include-message=always

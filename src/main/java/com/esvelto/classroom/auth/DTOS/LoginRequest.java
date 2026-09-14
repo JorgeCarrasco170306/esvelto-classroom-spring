@@ -6,19 +6,11 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
-public record RegisterRequest(
+public record LoginRequest(
         @NotBlank
         @Email
         String email,
         @NotBlank
-        @Size(min = 8)
-        String password,
-        @NotBlank
-        @Size(min = 3)
-        String name,
-        @Size(min = 3)
-        String lastname,
-        @NotBlank
-        LocalDate birthdate
+        String password
 ) {
 }
