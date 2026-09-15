@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.modulith.NamedInterface;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+@NamedInterface
 @Entity
 @Table(name = "users")
 @AllArgsConstructor
@@ -34,12 +36,11 @@ public class User extends BaseClass implements UserDetails {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
-    @Column(nullable = false, length = 6)
+    @Column(length = 6)
     private String verificationCode;
-
     private LocalDateTime codeExpirationTime;
-
     private boolean verified = false;
+    private LocalDateTime lastCodeSentAt;
 
 
     @Override

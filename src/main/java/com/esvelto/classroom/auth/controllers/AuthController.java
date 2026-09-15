@@ -47,4 +47,11 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(
+            @RequestParam UUID userId) {
+        authService.sendCode(userId);
+        return ResponseEntity.ok().build();
+    }
+
 }

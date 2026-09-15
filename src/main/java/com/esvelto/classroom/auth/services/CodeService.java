@@ -10,7 +10,7 @@ public class CodeService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public static String generateCode(){
-        int number = 10000 + RANDOM.nextInt(90000);
+        int number = 100000 + RANDOM.nextInt(900000);
         return String.valueOf(number);
     }
 

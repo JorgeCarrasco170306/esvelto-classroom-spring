@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -45,7 +46,7 @@ public class AuthService {
         user.setEmail(dto.email());
         user.setName(dto.name());
         user.setLastname(dto.lastname());
-        user.setBirthdate(dto.birthdate()); // LocalDate.parse(dto.birthdate()) si en el DTO es String
+        user.setBirthdate(dto.birthdate());
         user.setPassword(passwordEncoder.encode(dto.password()));
         user.setRole(Role.STUDENT);
         user.setVerified(false);
@@ -54,7 +55,7 @@ public class AuthService {
 
         User saved = userRepository.save(user);
 
-        emailService.enviarCodigoVerificacion(user.getEmail(), code);
+        sendCode(user.getId());
         return new UserResponse(
                 saved.getId(),
                 saved.getEmail(),
@@ -66,6 +67,8 @@ public class AuthService {
         );
     }
 
+    @Transactional
+
     public void verifyEmail(UUID id, String code) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
@@ -74,14 +77,20 @@ public class AuthService {
         if (!user.getVerificationCode().equals(code))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Incorrect Code");
 
+        if (!user.isVerified())
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User already verified");
+
         if (user.getCodeExpirationTime().isBefore(LocalDateTime.now()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Code expired");
 
         user.setVerified(true);
+        user.setVerificationCode(null);
+        user.setCodeExpirationTime(null);
         userRepository.save(user);
 
     }
 
+    @Transactional
     public LoginResponse login(LoginRequest dto) {
 
         User user = userRepository.findByEmail(dto.email()).orElseThrow(
@@ -92,14 +101,12 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user is not verified");
 
         try {
-            Authentication authentication = authenticationManager.authenticate(
+            authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             dto.email(),
                             dto.password()
                     )
             );
-
-            User user2 = (User) authentication.getPrincipal();
 
             return new LoginResponse(jwtService.generateToken(user));
         } catch (BadCredentialsException ex) {
@@ -107,6 +114,7 @@ public class AuthService {
         }
     }
 
+    @Transactional
     public void changePassword(ChangePasswordRequest dto, User currentUser) {
 
         if (!dto.newPassword().equals(dto.confirmPassword())) {
@@ -126,5 +134,37 @@ public class AuthService {
 
     }
 
+    @Transactional
+    public void sendCode(UUID userId) {
+
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found")
+        );
+
+        if (user.getLastCodeSentAt() != null) {
+            int COOLDOWN_MINUTES = 10;
+            LocalDateTime nextSend = user.getLastCodeSentAt().plusMinutes(COOLDOWN_MINUTES);
+
+            if (LocalDateTime.now().isBefore(nextSend)) {
+                long secondsRest = Duration.between(LocalDateTime.now(), nextSend).getSeconds();
+
+
+                throw new ResponseStatusException(
+                        HttpStatus.TOO_MANY_REQUESTS,
+                        "need wait " + secondsRest + " seconds to request another code"
+                );
+
+            }
+        }
+
+        String newCode = CodeService.generateCode();
+        user.setVerificationCode(newCode);
+        user.setCodeExpirationTime(LocalDateTime.now().plusMinutes(10));
+        user.setLastCodeSentAt(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        emailService.enviarCodigoVerificacion(user.getEmail(), newCode);
+    }
 
 }
