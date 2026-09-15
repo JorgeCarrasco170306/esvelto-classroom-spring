@@ -13,6 +13,7 @@ public record UserResponse(
         String name,
         String lastname,
         LocalDate birthdate,
-        String role
+        String role,
+        String message
 ) {
 }

@@ -1,20 +1,23 @@
 package com.esvelto.classroom.auth.services;
 
-import com.esvelto.classroom.auth.DTOS.AuthMapper;
-import com.esvelto.classroom.auth.DTOS.LoginRequest;
-import com.esvelto.classroom.auth.DTOS.RegisterRequest;
-import com.esvelto.classroom.auth.DTOS.UserResponse;
+import com.esvelto.classroom.auth.DTOS.*;
 import com.esvelto.classroom.auth.models.Role;
 import com.esvelto.classroom.auth.models.User;
 import com.esvelto.classroom.auth.repository.UserRepository;
+import com.esvelto.classroom.email.services.EmailService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +28,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final EmailService emailService;
 
+    @Transactional
     public UserResponse register(RegisterRequest dto) {
 
         if (userRepository.existsByEmail(dto.email())) {
@@ -34,28 +39,86 @@ public class AuthService {
                     "Email already in use");
         }
 
-        User user = authMapper.toEntity(dto);
+        String code = CodeService.generateCode();
 
+        User user = new User();
+        user.setEmail(dto.email());
+        user.setName(dto.name());
+        user.setLastname(dto.lastname());
+        user.setBirthdate(dto.birthdate()); // LocalDate.parse(dto.birthdate()) si en el DTO es String
         user.setPassword(passwordEncoder.encode(dto.password()));
         user.setRole(Role.STUDENT);
+        user.setVerified(false);
+        user.setVerificationCode(code);
+        user.setCodeExpirationTime(LocalDateTime.now().plusMinutes(10));
 
         User saved = userRepository.save(user);
 
-        return authMapper.toDto(saved);
+        emailService.enviarCodigoVerificacion(user.getEmail(), code);
+        return new UserResponse(
+                saved.getId(),
+                saved.getEmail(),
+                saved.getName(),
+                saved.getLastname(),
+                saved.getBirthdate(),
+                saved.getRole().name(),
+                "We've sent a confirmation email"
+        );
     }
 
-    public String login(LoginRequest dto) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        dto.email(),
-                        dto.password()
-                )
+    public void verifyEmail(UUID id, String code) {
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         );
 
-        User user = (User) authentication.getPrincipal();
+        if (!user.getVerificationCode().equals(code))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Incorrect Code");
 
-        return jwtService.generateToken(user);
+        if(user.getCodeExpirationTime().isAfter(LocalDateTime.now()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Code expired");
+
+        user.setVerified(true);
 
     }
+
+    public LoginResponse login(LoginRequest dto) {
+
+        
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            dto.email(),
+                            dto.password()
+                    )
+            );
+
+            User user = (User) authentication.getPrincipal();
+
+            return new LoginResponse(jwtService.generateToken(user) );
+        } catch (BadCredentialsException ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email or password incorrect");
+        }
+    }
+
+    public void changePassword(ChangePasswordRequest dto, User currentUser) {
+
+        if (!dto.newPassword().equals(dto.confirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "new password and confirm password are different");
+        }
+
+        if (passwordEncoder.matches(dto.currentPassword(), currentUser.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "current password incorrect");
+        }
+
+        if (passwordEncoder.matches(dto.currentPassword(), dto.newPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "new password has to be different from earlier password");
+        }
+
+        currentUser.setPassword(passwordEncoder.encode(dto.newPassword()));
+        userRepository.save(currentUser);
+
+    }
+
 
 }
