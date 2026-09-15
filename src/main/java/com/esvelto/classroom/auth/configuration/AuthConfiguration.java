@@ -45,9 +45,8 @@ public class AuthConfiguration {
                         session ->
                                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/register", "/auth/login", "/error").permitAll()
+                        .requestMatchers("/auth/register", "/auth/login", "/auth/verify-email",  "/error").permitAll()
                         .requestMatchers("/auth/change-password").authenticated()
-                        .requestMatchers("/auth/verify-email").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()

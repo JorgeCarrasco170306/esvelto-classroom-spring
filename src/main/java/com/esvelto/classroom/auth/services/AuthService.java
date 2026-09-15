@@ -74,16 +74,22 @@ public class AuthService {
         if (!user.getVerificationCode().equals(code))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Incorrect Code");
 
-        if(user.getCodeExpirationTime().isAfter(LocalDateTime.now()))
+        if (user.getCodeExpirationTime().isBefore(LocalDateTime.now()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Code expired");
 
         user.setVerified(true);
+        userRepository.save(user);
 
     }
 
     public LoginResponse login(LoginRequest dto) {
 
-        
+        User user = userRepository.findByEmail(dto.email()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found")
+        );
+
+        if (!user.isVerified())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user is not verified");
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -93,9 +99,9 @@ public class AuthService {
                     )
             );
 
-            User user = (User) authentication.getPrincipal();
+            User user2 = (User) authentication.getPrincipal();
 
-            return new LoginResponse(jwtService.generateToken(user) );
+            return new LoginResponse(jwtService.generateToken(user));
         } catch (BadCredentialsException ex) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email or password incorrect");
         }

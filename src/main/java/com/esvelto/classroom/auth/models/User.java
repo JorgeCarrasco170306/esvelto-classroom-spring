@@ -53,7 +53,12 @@ public class User extends BaseClass implements UserDetails {
     }
 
     @Override
-    public String getPassword(){
+    public String getPassword() {
         return password;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isEnabled();
     }
 }
