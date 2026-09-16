@@ -1,0 +1,42 @@
+server:
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: classroom
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH}
+          ssl:
+            enable: ${MAIL_SMTP_SSL_ENABLE}
+          socketFactory:
+            port: ${MAIL_SMTP_SOCKET_FACTORY_PORT}
+            class: ${MAIL_SMTP_SOCKET_FACTORY_CLASS}
+
+  web:
+    error:
+      include-stacktrace: never
+      include-message: always
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}

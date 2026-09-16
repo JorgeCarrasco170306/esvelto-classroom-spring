@@ -25,9 +25,11 @@ public class Institution extends BaseClass {
     private String logoUrl;
 
     @ManyToOne()
+    @Column (nullable = false)
     private Teacher teacher;
 
     @OneToMany(mappedBy = "institution")
+    @Column (nullable = true)
     private List<Student> students;
 
 }

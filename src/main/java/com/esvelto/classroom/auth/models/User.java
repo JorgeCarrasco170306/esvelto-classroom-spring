@@ -60,6 +60,6 @@ public class User extends BaseClass implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isEnabled();
+        return isVerified();
     }
 }

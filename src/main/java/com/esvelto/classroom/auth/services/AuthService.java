@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final AuthMapper authMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -68,7 +66,6 @@ public class AuthService {
     }
 
     @Transactional
-
     public void verifyEmail(UUID id, String code) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
@@ -77,7 +74,7 @@ public class AuthService {
         if (!user.getVerificationCode().equals(code))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Incorrect Code");
 
-        if (!user.isVerified())
+        if (user.isVerified())
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User already verified");
 
         if (user.getCodeExpirationTime().isBefore(LocalDateTime.now()))
