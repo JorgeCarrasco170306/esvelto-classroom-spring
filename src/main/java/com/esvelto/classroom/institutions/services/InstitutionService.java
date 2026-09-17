@@ -42,8 +42,13 @@ public class InstitutionService {
 
         Institution institution = new Institution();
 
+
         Teacher teacher = teacherRepository.findById((dto.teacherId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
+
+        if (repository.existsByName(dto.name())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Institution name already exists");
+        }
 
         if (!dto.studentsIds().isEmpty()) {
             List<Student> students = studentRepository.findAllById((dto.studentsIds()));
