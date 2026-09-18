@@ -34,14 +34,13 @@ public class InstitutionService {
                         x.getName(),
                         x.getLogoUrl(),
                         x.getTeacher().getId(),
-                        x.getStudents().stream().map(BaseClass::getId).toList()
+                        x.getStudents() != null ? x.getStudents().stream().map(BaseClass::getId).toList() : null
                 ));
     }
 
     public InstitutionResponse create(InstitutionRequest dto) {
 
         Institution institution = new Institution();
-
 
         Teacher teacher = teacherRepository.findById((dto.teacherId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
@@ -50,9 +49,9 @@ public class InstitutionService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Institution name already exists");
         }
 
-        if (!dto.studentsIds().isEmpty()) {
-            List<Student> students = studentRepository.findAllById((dto.studentsIds()));
-            students.forEach(x -> institution.getStudents().add(x));
+        if (dto.studentsIds() != null) {
+                List<Student> students = studentRepository.findAllById((dto.studentsIds()));
+                students.forEach(x -> institution.getStudents().add(x));
         }
 
         institution.setName(dto.name());
