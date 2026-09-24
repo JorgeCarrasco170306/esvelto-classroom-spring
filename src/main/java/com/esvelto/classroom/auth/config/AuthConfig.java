@@ -58,8 +58,7 @@ public class AuthConfig {
                 .authenticationProvider(authenticationProvider)
 
                 .authorizeHttpRequests(auth -> auth
-
-                        .requestMatchers("/auth/**", "/error")
+                        .requestMatchers("/auth/login", "/auth/register", "/error")
                         .permitAll()
                         .anyRequest()
                         .authenticated()

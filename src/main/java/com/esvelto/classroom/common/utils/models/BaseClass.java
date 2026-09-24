@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @MappedSuperclass
-@Data
+@Data 
 public class BaseClass {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -2,20 +2,23 @@ package com.esvelto.classroom.auth.DTOS;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import org.hibernate.validator.constraints.Length;
+import jakarta.validation.constraints.Size;
 
 public record RegisterDTO(
-        @NotBlank
-        @Length(min = 4, message = "name length must be > 4")
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(min = 4, message = "El nombre debe tener al menos 4 caracteres")
         String name,
-        @NotBlank
-        @Length(min = 4, message = "lastname length must be > 4")
+
+        @NotBlank(message = "El apellido es obligatorio")
+        @Size(min = 4, message = "El apellido debe tener al menos 4 caracteres")
         String lastname,
-        @NotBlank
-        @Email
+
+        @NotBlank(message = "El correo electrónico es obligatorio")
+        @Email(message = "El formato del correo electrónico no es válido")
         String email,
-        @NotBlank
-        @Length(min = 8, message = "Password length must be > 8")
+
+        @NotBlank(message = "La contraseña es obligatoria")
+        @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
         String password
 ) {
 }

@@ -31,8 +31,6 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .claim("id", user.getId())
-                .claim("name", user.getName())
-                .claim("lastname", user.getLastname())
                 .claim("role", user.getRole())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
@@ -73,6 +71,5 @@ public class JwtService {
 
         return username.equals(user.getUsername()) && !isTokenExpired(token);
     }
-
 
 }

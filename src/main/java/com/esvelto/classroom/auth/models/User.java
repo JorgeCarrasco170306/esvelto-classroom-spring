@@ -24,6 +24,7 @@ public class User extends BaseClass implements UserDetails {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    private String profilePhotoUrl;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
