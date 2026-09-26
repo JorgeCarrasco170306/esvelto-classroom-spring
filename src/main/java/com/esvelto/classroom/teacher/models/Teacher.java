@@ -2,18 +2,23 @@ package com.esvelto.classroom.teacher.models;
 
 import com.esvelto.classroom.auth.models.User;
 import com.esvelto.classroom.common.utils.models.BaseClass;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import lombok.Data;
+import com.esvelto.classroom.institutions.models.Institution;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "teachers")
-@Data
+@Getter
+@Setter
 public class Teacher extends BaseClass {
 
-    @OneToOne()
+    @OneToOne
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "teacher")
+    private Set<Institution> institutions;
 }

@@ -2,7 +2,8 @@ package com.esvelto.classroom.auth.models;
 
 import com.esvelto.classroom.common.utils.models.BaseClass;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,8 +14,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 public class User extends BaseClass implements UserDetails {
+
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
