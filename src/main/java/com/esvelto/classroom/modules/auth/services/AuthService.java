@@ -51,7 +51,7 @@ public class AuthService {
     public LoginResponse login(LoginRequest dto) {
 
         User user = userRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new GlobalError().NotFound("user not found"));
+                .orElseThrow(() -> GlobalError.NotFound("user not found"));
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.email(), dto.password()));
