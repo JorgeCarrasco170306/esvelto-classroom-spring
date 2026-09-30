@@ -1,0 +1,14 @@
+
+30/9/2026
+
+1.Terminar el auth service
+2.Generar los testing del auth service
+3.mandar toda la logica de los codigos a otra tabla relacionada con Users
+4.crear endpoint auth/me que mediante el token devuelva toda la info del usuario
+4.comenzar aplicación angular e implementar toda la logica de auth creada en el backend
+
+31/9/2026
+
+1.implementar student module y teacher module (proximante se usara para manejar instituciones y clases)
+2.Generar los respectivos testing
+3.sin logica que implementar del lado de angular por ahora, simplemente algo que diga en tu perfil tu rol actual en la aplicación y si tienes una cuenta verificada o no

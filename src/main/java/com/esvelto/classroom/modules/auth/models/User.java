@@ -1,5 +1,6 @@
 package com.esvelto.classroom.modules.auth.models;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,6 +32,10 @@ public class User extends BaseClass implements UserDetails {
     private String email;
     @Column(nullable = false)
     private boolean isVerified = false;
+    @Column(nullable = false)
+    private LocalDateTime expirationTime;
+    @Column(nullable = false)
+    private LocalDateTime creationTime;
     @Column(nullable = false)
     private String password;
     @Column()
