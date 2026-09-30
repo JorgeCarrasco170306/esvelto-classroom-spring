@@ -8,7 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import com.esvelto.classroom.modules.auth.models.User;
 
-@Repository 
-public interface UserRepository extends JpaRepository<UUID, User> {
+@Repository
+public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }

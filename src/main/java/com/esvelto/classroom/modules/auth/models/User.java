@@ -30,7 +30,7 @@ public class User extends BaseClass implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
     @Column(nullable = false)
-    private boolean isVerified;
+    private boolean isVerified = false;
     @Column(nullable = false)
     private String password;
     @Column()
