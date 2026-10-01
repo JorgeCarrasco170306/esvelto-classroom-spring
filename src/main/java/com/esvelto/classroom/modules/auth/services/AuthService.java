@@ -1,10 +1,14 @@
 package com.esvelto.classroom.modules.auth.services;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.esvelto.classroom.errors.GlobalError;
 import com.esvelto.classroom.modules.auth.dtos.AuthMapper;
@@ -31,27 +35,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public void validateEmail(ValidateEmail validateEmail) {
-        
-    }
+    public String sendVerificationEmail(String destination) {
 
-    public void register(RegisterRequest dto) {
-
-        if (userRepository.existsByEmail(dto.email()))
-            throw GlobalError.Conflict("email already exists");
+        User user = userRepository.findByEmail(destination)
+                .orElseThrow(() -> GlobalError.NotFound("user not found"));
 
         String verificationCode = RandomStringUtils.secure().nextNumeric(6);
 
-        User user = authMapper.toEntity(dto);
+        user.setVerificationCode(verificationCode);
+        user.setExpirationDate(LocalDateTime.now().plusMinutes(15));
 
-        if (user == null) {
-            throw GlobalError.BadRequest("user could not be created");
-        }
-
-        // send email
+        userRepository.save(user);
 
         Email email = new Email(
-                dto.email(),
+                destination,
                 "Código de verificación: " + verificationCode,
                 """
                         ¡Hola!
@@ -59,17 +56,63 @@ public class AuthService {
                         Tu código de verificación para Esvelto Classroom es: %s
 
                         Ingresa este código en la aplicación para completar tu registro.
+                        Este código expira en 15 minutos.
 
                         Si no creaste esta cuenta, ignora este correo.
                         """.formatted(verificationCode));
+
         emailService.sendSimpleEmail(email);
 
+        return verificationCode;
+    }
+
+    @Transactional
+    public void validateEmail(ValidateEmail dto) {
+
+        User user = userRepository.findByEmail(dto.email())
+                .orElseThrow(() -> GlobalError.NotFound("There is no user with this email"));
+
+        if (user.isVerified()) {
+            throw GlobalError.BadRequest("User already verified");
+        }
+
+        if (user.getVerificationCode() == null
+                || !Objects.equals(user.getVerificationCode(), dto.verificationCode())) {
+            throw GlobalError.BadRequest("incorrect code");
+        }
+
+        if (user.getExpirationDate() == null
+                || !user.getExpirationDate().isAfter(LocalDateTime.now())) {
+            throw GlobalError.BadRequest(
+                    "verification code expired");
+        }
+
+        user.setVerified(true);
+        user.setVerificationCode(null);
+        user.setExpirationDate(null);
+
+        userRepository.saveAndFlush(user);
+    }
+
+    public void register(RegisterRequest dto) {
+
+        if (userRepository.existsByEmail(dto.email())) {
+            throw GlobalError.Conflict("email already exists");
+        }
+
+        User user = authMapper.toEntity(dto);
+
+        if (user == null) {
+            throw GlobalError.BadRequest("user could not be created");
+        }
+
         user.setRole(Role.STUDENT);
-        user.setVerificationCode(verificationCode);
         user.setVerified(false);
         user.setPassword(passwordEncoder.encode(dto.password()));
 
         userRepository.save(user);
+
+        sendVerificationEmail(dto.email());
     }
 
     public LoginResponse login(LoginRequest dto) {
@@ -77,13 +120,17 @@ public class AuthService {
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> GlobalError.NotFound("user not found"));
 
+        if (!user.isVerified()) {
+            throw GlobalError.Conflict("User is not verified");
+        }
+
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.email(), dto.password()));
+                new UsernamePasswordAuthenticationToken(
+                        dto.email(),
+                        dto.password()));
 
         String token = jwtService.generateToken(user);
 
         return new LoginResponse(token);
-
     }
-
 }

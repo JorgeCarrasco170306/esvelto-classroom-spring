@@ -21,7 +21,6 @@ public class JwtService {
     private String secretKey;
     @Value("${jwt.expiration}")
     private long expiration;
-
     
 
     // ? obtener key

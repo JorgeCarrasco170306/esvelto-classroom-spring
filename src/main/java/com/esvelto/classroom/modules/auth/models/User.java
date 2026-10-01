@@ -14,6 +14,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,18 +32,19 @@ public class User extends BaseClass implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
     @Column(nullable = false)
-    private boolean isVerified = false;
-    @Column(nullable = false)
-    private LocalDateTime expirationTime;
-    @Column(nullable = false)
-    private LocalDateTime creationTime;
-    @Column(nullable = false)
     private String password;
-    @Column()
-    private String verificationCode;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+    
+    // ? code and verification
+    
+    @Column(nullable = false)
+    private boolean isVerified = false;
+    @Column
+    private String verificationCode;
+    @Column
+    private LocalDateTime expirationDate;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

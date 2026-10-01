@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.esvelto.classroom.modules.auth.dtos.LoginRequest;
 import com.esvelto.classroom.modules.auth.dtos.LoginResponse;
 import com.esvelto.classroom.modules.auth.dtos.RegisterRequest;
+import com.esvelto.classroom.modules.auth.dtos.ResendVerification;
+import com.esvelto.classroom.modules.auth.dtos.ValidateEmail;
 import com.esvelto.classroom.modules.auth.services.AuthService;
 
 import jakarta.validation.Valid;
@@ -22,10 +24,24 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(
+            @Valid @RequestBody ResendVerification verification) {
+        authService.sendVerificationEmail(verification.email());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest dto) {
         return ResponseEntity.ok(authService.login(dto));
+    }
+
+    @PostMapping("/validate-email")
+    public ResponseEntity<Void> validateEmail(
+            @Valid @RequestBody ValidateEmail dto) {
+        authService.validateEmail(dto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @PostMapping("/register")
