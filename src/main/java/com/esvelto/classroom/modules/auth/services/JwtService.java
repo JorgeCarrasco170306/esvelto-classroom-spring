@@ -22,6 +22,8 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    
+
     // ? obtener key
     private SecretKey getSecretKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);

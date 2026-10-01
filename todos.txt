@@ -12,3 +12,4 @@
 1.implementar student module y teacher module (proximante se usara para manejar instituciones y clases)
 2.Generar los respectivos testing
 3.sin logica que implementar del lado de angular por ahora, simplemente algo que diga en tu perfil tu rol actual en la aplicación y si tienes una cuenta verificada o no
+4.implementar auditoria en la aplicación y entenderla
