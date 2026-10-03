@@ -14,6 +14,9 @@ public interface AuthMapper {
     @Mapping(target = "verificationCode", ignore = true)
     @Mapping(target = "verified", ignore = true)
     @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "expirationDate", ignore = true)
     User toEntity(RegisterRequest req);
+
+    UserResponse toDto(User user);
 
 }

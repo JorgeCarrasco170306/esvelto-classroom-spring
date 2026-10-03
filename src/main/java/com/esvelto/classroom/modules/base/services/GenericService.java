@@ -1,36 +1,36 @@
 package com.esvelto.classroom.modules.base.services;
 
-import java.util.List;
-import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Contrato genérico base para operaciones CRUD y de persistencia.
  *
  * @param <R> El tipo de DTO que se retorna en las respuestas de lectura.
- * @param <T> El tipo de la entidad JPA principal asociada al repositorio.
+ * @param <T> El tipo de DTO que se espera para agregar o operaciones similares.
  * @param <U> El tipo de dato de la clave primaria (ID) de la entidad (ej. Long,
  *            UUID).
  * 
  * @author Jorge
  * @version 1.0
  */
-public interface GenericRepository<R, T, U> {
+public interface GenericService<R, T, U> {
 
     /**
      * Busca una entidad por su identificador único.
      *
      * @param id El identificador único de la entidad. No debe ser nulo.
-     * @return Un {@link Optional} que contiene la respuesta DTO si existe, o vacío
+     * @return Un {@link R} que contiene la respuesta DTO si existe, o vacío
      *         si no se encontró.
      */
-    Optional<R> findById(U id);
+    R findById(U id);
 
     /**
      * Obtiene todos los registros disponibles mapeados a su DTO de salida.
      *
      * @return Una lista con todos los elementos encontrados.
      */
-    List<R> findAll();
+    Page<R> findAll(Pageable pageable);
 
     /**
      * Guarda o actualiza una entidad en la base de datos.

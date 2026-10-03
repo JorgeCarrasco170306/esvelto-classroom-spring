@@ -21,4 +21,5 @@ public class GlobalError {
         return new ResponseStatusException(HttpStatus.CONFLICT, message);
     }
 
+
 }

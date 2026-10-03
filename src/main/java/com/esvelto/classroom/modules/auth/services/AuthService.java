@@ -3,6 +3,7 @@ package com.esvelto.classroom.modules.auth.services;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import com.esvelto.classroom.modules.auth.dtos.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,11 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.esvelto.classroom.errors.GlobalError;
-import com.esvelto.classroom.modules.auth.dtos.AuthMapper;
-import com.esvelto.classroom.modules.auth.dtos.LoginRequest;
-import com.esvelto.classroom.modules.auth.dtos.LoginResponse;
-import com.esvelto.classroom.modules.auth.dtos.RegisterRequest;
-import com.esvelto.classroom.modules.auth.dtos.ValidateEmail;
 import com.esvelto.classroom.modules.auth.models.Role;
 import com.esvelto.classroom.modules.auth.models.User;
 import com.esvelto.classroom.modules.auth.repository.UserRepository;
@@ -35,7 +31,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public String sendVerificationEmail(String destination) {
+    public void sendVerificationEmail(String destination) {
 
         User user = userRepository.findByEmail(destination)
                 .orElseThrow(() -> GlobalError.NotFound("user not found"));
@@ -52,18 +48,17 @@ public class AuthService {
                 "Código de verificación: " + verificationCode,
                 """
                         ¡Hola!
-
+                        
                         Tu código de verificación para Esvelto Classroom es: %s
-
+                        
                         Ingresa este código en la aplicación para completar tu registro.
                         Este código expira en 15 minutos.
-
+                        
                         Si no creaste esta cuenta, ignora este correo.
                         """.formatted(verificationCode));
 
         emailService.sendSimpleEmail(email);
 
-        return verificationCode;
     }
 
     @Transactional
@@ -73,12 +68,12 @@ public class AuthService {
                 .orElseThrow(() -> GlobalError.NotFound("There is no user with this email"));
 
         if (user.isVerified()) {
-            throw GlobalError.BadRequest("User already verified");
+            throw GlobalError.Unauthorized("User already verified");
         }
 
         if (user.getVerificationCode() == null
                 || !Objects.equals(user.getVerificationCode(), dto.verificationCode())) {
-            throw GlobalError.BadRequest("incorrect code");
+            throw GlobalError.Conflict("incorrect code");
         }
 
         if (user.getExpirationDate() == null
@@ -132,5 +127,16 @@ public class AuthService {
         String token = jwtService.generateToken(user);
 
         return new LoginResponse(token);
+    }
+
+    public UserResponse getMe(User user) {
+        if (user == null) {
+            throw GlobalError.NotFound("user not found");
+        }
+
+        User user1 = userRepository.findById(user.getId())
+                .orElseThrow(() -> GlobalError.NotFound("user not found"));
+
+        return authMapper.toDto(user1);
     }
 }
