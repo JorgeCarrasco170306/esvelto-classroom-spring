@@ -46,25 +46,14 @@ public class InstitutionServiceImpl implements InstitutionService {
     @Transactional
     public InstitutionResponse save(InstitutionRequest entity) {
 
-        var institution = this.mapper.toEntity(entity);
-
-        List<UUID> studentIds = entity.getStudents() == null
-                ? List.of()
-                : entity.getStudents();
-        List<Student> students = this.studentRepo.findAllById(studentIds);
-        var foundStudentIds = students.stream()
-                .map(Student::getId)
-                .collect(java.util.stream.Collectors.toSet());
-        var missingStudentIds = new HashSet<>(studentIds);
-        missingStudentIds.removeAll(foundStudentIds);
-        if (!missingStudentIds.isEmpty()) {
-            throw GlobalError.NotFound("students not found: " + missingStudentIds);
+        if (repository.existsByNameAndTeacherId(
+                entity.getName(),
+                entity.getTeacherId())) {
+            throw GlobalError.BadRequest(
+                    "You already have an institution with this name");
         }
 
-        students.forEach(student -> {
-            institution.addStudent(student);
-            student.getInstitutions().add(institution);
-        });
+        var institution = this.mapper.toEntity(entity);
 
         var teacher = this.teacherRepo.findById(entity.getTeacherId())
                 .orElseThrow(() -> GlobalError.NotFound("teacher not found"));
@@ -77,6 +66,12 @@ public class InstitutionServiceImpl implements InstitutionService {
     @Override
     public void deleteById(UUID id) {
         this.repository.deleteById(id);
+    }
+
+    @Override
+    public Page<InstitutionResponse> findAll(Pageable pageable, String name) {
+        return this.repository.findByNameContainingIgnoreCase(pageable, name)
+                .map(mapper::toResponse);
     }
 
 }

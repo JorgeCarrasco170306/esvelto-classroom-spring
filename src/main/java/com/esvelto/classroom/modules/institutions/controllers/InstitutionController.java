@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.esvelto.classroom.modules.institutions.dtos.InstitutionRequest;
@@ -31,8 +32,9 @@ public class InstitutionController {
 
     @GetMapping
     public ResponseEntity<Page<InstitutionResponse>> findAll(
+            @RequestParam(required = false) String name,
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
-        return ResponseEntity.ok(service.findAll(pageable));
+        return ResponseEntity.ok(service.findAll(pageable, name == null ? "" : name));
     }
 
     @GetMapping("/{id}")
