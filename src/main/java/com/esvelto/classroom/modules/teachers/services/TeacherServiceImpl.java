@@ -10,7 +10,6 @@ import com.esvelto.classroom.errors.GlobalError;
 import com.esvelto.classroom.modules.auth.models.Role;
 import com.esvelto.classroom.modules.auth.models.User;
 import com.esvelto.classroom.modules.auth.repository.UserRepository;
-import com.esvelto.classroom.modules.teachers.dtos.TeacherMapper;
 import com.esvelto.classroom.modules.teachers.dtos.TeacherRequest;
 import com.esvelto.classroom.modules.teachers.dtos.TeacherResponse;
 import com.esvelto.classroom.modules.teachers.models.Teacher;
@@ -24,20 +23,19 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepo teacherRepo;
     private final UserRepository userRepository;
-    private final TeacherMapper teacherMapper;
 
     @Override
     public TeacherResponse findById(UUID id) {
         Teacher teacher = teacherRepo.findById(id)
                 .orElseThrow(() -> GlobalError.NotFound("teacher not found"));
 
-        return teacherMapper.toResponse(teacher);
+        return TeacherResponse.from(teacher);
     }
 
     @Override
     public Page<TeacherResponse> findAll(Pageable pageable) {
         return teacherRepo.findAll(pageable)
-                .map(teacherMapper::toResponse);
+                .map(TeacherResponse::from);
     }
 
     @Override
@@ -49,14 +47,14 @@ public class TeacherServiceImpl implements TeacherService {
         User user = userRepository.findById(entity.getUserId())
                 .orElseThrow(() -> GlobalError.NotFound("user not found"));
 
-        Teacher teacher = teacherMapper.toEntity(entity);
+        Teacher teacher = new Teacher();
         teacher.setUser(user);
         user.setRole(Role.TEACHER);
 
         teacherRepo.save(teacher);
         userRepository.save(user);
 
-        return teacherMapper.toResponse(teacher);
+        return TeacherResponse.from(teacher);
 
     }
 

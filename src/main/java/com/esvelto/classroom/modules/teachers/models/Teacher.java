@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.esvelto.classroom.modules.auth.models.User;
 import com.esvelto.classroom.modules.base.models.BaseClass;
+import com.esvelto.classroom.modules.courses.models.Course;
 import com.esvelto.classroom.modules.institutions.models.Institution;
 
 import jakarta.persistence.Entity;
@@ -24,5 +25,6 @@ public class Teacher extends BaseClass {
 
     @OneToMany(mappedBy = "teacher")
     private List<Institution> institutions;
+
 
 }

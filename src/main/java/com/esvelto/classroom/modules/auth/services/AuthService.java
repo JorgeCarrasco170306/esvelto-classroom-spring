@@ -3,7 +3,6 @@ package com.esvelto.classroom.modules.auth.services;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import com.esvelto.classroom.modules.auth.dtos.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.esvelto.classroom.errors.GlobalError;
+import com.esvelto.classroom.modules.auth.dtos.LoginRequest;
+import com.esvelto.classroom.modules.auth.dtos.LoginResponse;
+import com.esvelto.classroom.modules.auth.dtos.RegisterRequest;
+import com.esvelto.classroom.modules.auth.dtos.UserResponse;
+import com.esvelto.classroom.modules.auth.dtos.ValidateEmail;
 import com.esvelto.classroom.modules.auth.models.Role;
 import com.esvelto.classroom.modules.auth.models.User;
 import com.esvelto.classroom.modules.auth.repository.UserRepository;
@@ -26,7 +30,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final AuthMapper authMapper;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
@@ -95,12 +98,10 @@ public class AuthService {
             throw GlobalError.Conflict("email already exists");
         }
 
-        User user = authMapper.toEntity(dto);
-
-        if (user == null) {
-            throw GlobalError.BadRequest("user could not be created");
-        }
-
+        User user = new User();
+        user.setName(dto.name());
+        user.setLastname(dto.lastname());
+        user.setEmail(dto.email());
         user.setRole(Role.STUDENT);
         user.setVerified(false);
         user.setPassword(passwordEncoder.encode(dto.password()));
@@ -137,6 +138,6 @@ public class AuthService {
         User user1 = userRepository.findById(user.getId())
                 .orElseThrow(() -> GlobalError.NotFound("user not found"));
 
-        return authMapper.toDto(user1);
+        return UserResponse.from(user1);
     }
 }

@@ -10,7 +10,6 @@ import com.esvelto.classroom.errors.GlobalError;
 import com.esvelto.classroom.modules.auth.models.Role;
 import com.esvelto.classroom.modules.auth.models.User;
 import com.esvelto.classroom.modules.auth.repository.UserRepository;
-import com.esvelto.classroom.modules.students.dtos.StudentMapper;
 import com.esvelto.classroom.modules.students.dtos.StudentRequest;
 import com.esvelto.classroom.modules.students.dtos.StudentResponse;
 import com.esvelto.classroom.modules.students.models.Student;
@@ -24,20 +23,19 @@ public class StudentServiceImpl implements StudentService {
 
     private final StudentRepo studentRepo;
     private final UserRepository userRepository;
-    private final StudentMapper studentMapper;
 
     @Override
     public StudentResponse findById(UUID id) {
         Student student = studentRepo.findById(id)
                 .orElseThrow(() -> GlobalError.NotFound("student not found"));
 
-        return studentMapper.toResponse(student);
+        return StudentResponse.from(student);
     }
 
     @Override
     public Page<StudentResponse> findAll(Pageable pageable) {
         return studentRepo.findAll(pageable)
-                .map(studentMapper::toResponse);
+                .map(StudentResponse::from);
     }
 
     @Override
@@ -49,14 +47,14 @@ public class StudentServiceImpl implements StudentService {
         User user = userRepository.findById(entity.getUserId())
                 .orElseThrow(() -> GlobalError.NotFound("user not found"));
 
-        Student student = studentMapper.toEntity(entity);
+        Student student = new Student();
         student.setUser(user);
         user.setRole(Role.STUDENT);
 
         studentRepo.save(student);
         userRepository.save(user);
 
-        return studentMapper.toResponse(student);
+        return StudentResponse.from(student);
     }
 
     @Override
