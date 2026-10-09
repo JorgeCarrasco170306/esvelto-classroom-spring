@@ -7,19 +7,24 @@ import com.esvelto.classroom.modules.courses.models.Course;
 import com.esvelto.classroom.modules.courses.repository.CourseRepository;
 import com.esvelto.classroom.modules.institutions.models.Institution;
 import com.esvelto.classroom.modules.institutions.repository.InstitutionRepository;
+import com.esvelto.classroom.modules.students.models.Student;
+import com.esvelto.classroom.modules.students.repository.StudentRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository repository;
     private final InstitutionRepository institutionRepository;
+    private final StudentRepo studentRepo;
 
     @Override
     public CourseResponse findById(UUID id) {
@@ -52,5 +57,21 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public void deleteById(UUID id) {
         this.repository.deleteById(id);
+    }
+
+    @Override
+    public void addStudentToCourse(UUID courseId, UUID userId) {
+
+        Student student = studentRepo.findByUserId(userId)
+                .orElseThrow(() -> GlobalError.NotFound("student not found"));
+
+        Course course = repository.findById(courseId)
+                .orElseThrow(() -> GlobalError.NotFound("course not found"));
+
+        if (student.getCourses().contains(course)) {
+            throw GlobalError.Conflict("student already in the course");
+        }
+
+        student.getCourses().add(course);
     }
 }

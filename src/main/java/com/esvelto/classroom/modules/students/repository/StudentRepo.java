@@ -13,6 +13,4 @@ import com.esvelto.classroom.modules.students.models.Student;
 public interface StudentRepo extends JpaRepository<Student, UUID> {
     Optional<Student> findByUserId(UUID userId);
     boolean existsByUserId(UUID userId);
-
-    UUID user(User user);
 }

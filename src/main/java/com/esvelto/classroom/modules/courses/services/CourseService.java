@@ -7,4 +7,7 @@ import com.esvelto.classroom.modules.courses.dto.CourseResponse;
 import java.util.UUID;
 
 public interface CourseService extends GenericService<CourseResponse, CourseRequest, UUID> {
+
+    void addStudentToCourse(UUID courseId, UUID userId);
+
 }

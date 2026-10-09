@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 import com.esvelto.classroom.modules.auth.models.User;
 import com.esvelto.classroom.modules.base.models.BaseClass;
+import com.esvelto.classroom.modules.courses.models.Course;
+import com.esvelto.classroom.modules.homework.models.Homework;
 import com.esvelto.classroom.modules.institutions.models.Institution;
 
 import jakarta.persistence.Entity;
@@ -28,5 +30,13 @@ public class Student extends BaseClass {
     @ManyToMany
     @JoinTable(name = "student_institutions", joinColumns = @JoinColumn(name = "student_id"), inverseJoinColumns = @JoinColumn(name = "institution_id"))
     private List<Institution> institutions = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(name = "student_course", joinColumns = @JoinColumn(name = "student_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
+    private List<Course> courses = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(name = "students_homeworks", joinColumns = @JoinColumn(name = "student_id"), inverseJoinColumns = @JoinColumn(name = "homework_id"))
+    private List<Homework> homeworks = new ArrayList<>();
 
 }
